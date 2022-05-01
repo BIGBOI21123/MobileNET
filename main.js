@@ -3,4 +3,35 @@ function setup() {
   canvas.center();
   video = createCapture(VIDEO);
   video.hide();
+  classifier = ml5.imageClassifier('MobileNet', modelLoaded)
+}
+
+function modelLoaded() {
+   console.log('Model Loaded!');
+}
+
+function draw() {
+  image(video, 0, 0, 300, 300);
+  classifier.classify(video, gotresult);
+}
+
+var PreviousResult = '';
+
+function gotresult(error, results) {
+  if (error) {
+    console.error(error);
+  }
+  else {
+    if ((results[0].confidence > 0.5) && (PreviousResult != results[0].label)) {
+      console.log(results);
+      PreviousResult = results[0].label;
+      var synth = window.speechSynthesis;
+      speak_data = 'Object Detected is'+results[0].label;
+      var utterthis = new SpeechSynthesisUtterance(speak_data);
+      synth.speak(utterthis);
+    
+      document.getElementById("Result_OBJ").innerHTML = results[0].label;
+      document.getElementById("Result_ACC").innerHTML = results[0].confidence.toFixed(3) * 100+'%';
+    }
+  }
 }
